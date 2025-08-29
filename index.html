@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direccionamiento IP - VLSM y CIDR</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #3b82f6;
+            --accent: #22d3ee;
+            --light: #f0f9ff;
+            --dark: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .tab-btn {
+            background: rgba(37, 99, 235, 0.3);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(37, 99, 235, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .tab-btn.active {
+            background: var(--primary);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .content-section {
+            display: none;
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: var(--accent);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            color: var(--secondary);
+            margin: 20px 0 15px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .info-card {
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 25px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 10px;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        tr:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        
+        .game-container {
+            background: rgba(30, 41, 59, 0.7);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .quiz-option {
+            background: rgba(37, 99, 235, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option:hover {
+            background: rgba(37, 99, 235, 0.4);
+            transform: scale(1.02);
+        }
+        
+        .correct {
+            background-color: var(--success);
+        }
+        
+        .incorrect {
+            background-color: var(--danger);
+        }
+        
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        input, select {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            background: rgba(30, 41, 59, 0.8);
+            color: white;
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .result {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .success {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-left: 4px solid var(--success);
+            display: block;
+        }
+        
+        .error {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-left: 4px solid var(--danger);
+            display: block;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 30px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .content-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Direccionamiento IP: VLSM y CIDR</h1>
+            <p class="subtitle">VLSM es una técnica que funciona en el marco de CIDR. CIDR proporciona la base para la asignación de bloques IP sin clase, y VLSM es una forma de aplicar máscaras de subred de longitud variable dentro de esos bloques para optimizar aún más la asignación de direcciones dentro de una red.</p>
+        </header>
+        
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-target="intro">Introducción</button>
+            <button class="tab-btn" data-target="vlsm">VLSM (Con Clase)</button>
+            <button class="tab-btn" data-target="cidr">CIDR (Sin Clase)</button>
+            <button class="tab-btn" data-target="comparison">Comparación</button>
+            <button class="tab-btn" data-target="games">Juegos Educativos</button>
+        </div>
+        
+        <section id="intro" class="content-section active">
+            <h2>Introducción al Direccionamiento IP</h2>
+            <p>El direccionamiento IP es un aspecto fundamental de las redes de computadoras que permite la identificación única de dispositivos en una red. Existen dos enfoques principales: con clase (VLSM) y sin clase (CIDR).</p>
+            
+            <div class="info-card">
+                <p>Las direcciones IP versión 4 (IPv4) consisten en 32 bits, generalmente representados como cuatro octetos en formato decimal (por ejemplo, 192.168.1.1).</p>
+            </div>
+            
+            <h3>Breve Historia</h3>
+            <p>Inicialmente, las direcciones IP se asignaban utilizando direccionamiento con clase (Classful), que dividía el espacio de direcciones en clases fijas: A, B y C. Sin embargo, este método resultó ineficiente y llevó al agotamiento rápido de las direcciones IPv4.</p>
+            
+            <h3>El Problema del Agotamiento de Direcciones</h3>
+            <p>Con el crecimiento explosivo de Internet, se hizo evidente que el espacio de direcciones IPv4 era limitado. Esto llevó al desarrollo de técnicas como VLSM y CIDR para utilizar el espacio de direcciones de manera más eficiente.</p>
+        </section>
+        
+        <section id="vlsm" class="content-section">
+            <h2>VLSM - Variable Length Subnet Mask</h2>
+            <p>VLSM (Variable Length Subnet Mask) permite crear subredes de diferentes tamaños dentro de la misma red principal, optimizando el uso de las direcciones IP.</p>
+            
+            <h3>¿Cómo funciona VLSM?</h3>
+            <p>VLSM permite que un administrador de red utilice distintas longitudes de máscara de subred en diferentes partes de la misma red, permitiendo una asignación más eficiente del espacio de direcciones.</p>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Clase</th>
+                            <th>Rango de Direcciones</th>
+                            <th>Máscara por Defecto</th>
+                            <th>Ejemplo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A</td>
+                            <td>1.0.0.0 - 126.255.255.255</td>
+                            <td>255.0.0.0</td>
+                            <td>10.5.2.1/8</td>
+                        </tr>
+                        <tr>
+                            <td>B</td>
+                            <td>128.0.0.0 - 191.255.255.255</td>
+                            <td>255.255.0.0</td>
+                            <td>172.16.5.2/16</td>
+                        </tr>
+                        <tr>
+                            <td>C</td>
+                            <td>192.0.0.0 - 223.255.255.255</td>
+                            <td>255.255.255.0</td>
+                            <td>192.168.1.5/24</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3>Ejemplo de VLSM</h3>
+            <p>Supongamos que tenemos la red 192.168.1.0/24 y necesitamos crear subredes para: </p>
+            <ul>
+                <li>50 dispositivos en el departamento de ventas</li>
+                <li>25 dispositivos en el departamento de contabilidad</li>
+                <li>10 dispositivos en el departamento de recursos humanos</li>
+            </ul>
+            <p>Con VLSM, podemos crear subredes de diferentes tamaños para cada departamento, optimizando el uso de direcciones.</p>
+        </section>
+        
+        <section id="cidr" class="content-section">
+            <h2>CIDR - Classless Inter-Domain Routing</h2>
+            <p>CIDR (Classless Inter-Domain Routing) es un método que permite asignar direcciones IP sin depender de las clases tradicionales, utilizando prefijos de longitud variable.</p>
+            
+            <h3>Notación CIDR</h3>
+            <p>CIDR utiliza una notación que consiste en la dirección IP seguida por una barra y el número de bits significativos (por ejemplo, 192.168.1.0/24).</p>
+            
+            <div class="info-card">
+                <p>CIDR permite la agregación de rutas, reduciendo el tamaño de las tablas de routing en Internet y mejorando la eficiencia del routing.</p>
+            </div>
+            
+            <h3>Ventajas de CIDR</h3>
+            <ul>
+                <li>Mayor eficiencia en la asignación de direcciones IP</li>
+                <li>Reducción del tamaño de las tablas de routing</li>
+                <li>Flexibilidad en la creación de subredes</li>
+                <li>Mayor vida útil para las direcciones IPv4</li>
+            </ul>
+            
+            <h3>Ejemplo de CIDR</h3>
+            <p>Un ISP puede recibir un bloque de direcciones 200.100.50.0/22. Esto permite 2^(32-22) = 1024 direcciones, que pueden ser asignadas a múltiples clientes con diferentes necesidades.</p>
+        </section>
+        
+        <section id="comparison" class="content-section">
+            <h2>Comparación entre VLSM y CIDR</h2>
+            <p>Aunque VLSM y CIDR son técnicas diferentes, ambas buscan optimizar el uso del espacio de direcciones IP. La siguiente tabla muestra las diferencias clave:</p>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>VLSM</th>
+                            <th>CIDR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Enfoque</td>
+                            <td>Dentro de una red con clase</td>
+                            <td>Sin clases</td>
+                        </tr>
+                        <tr>
+                            <td>Flexibilidad</td>
+                            <td>Alta en subredes</td>
+                            <td>Muy alta</td>
+                        </tr>
+                        <tr>
+                            <td>Uso de direcciones</td>
+                            <td>Eficiente</td>
+                            <td>Muy eficiente</td>
+                        </tr>
+                        <tr>
+                            <td>Complejidad</td>
+                            <td>Moderada</td>
+                            <td>Alta</td>
+                        </tr>
+                        <tr>
+                            <td>Escalabilidad</td>
+                            <td>Limitada</td>
+                            <td>Muy escalable</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3>¿Cuándo usar cada uno?</h3>
+            <p>VLSM es útil en redes privadas donde se necesita optimizar el espacio de direcciones. CIDR es esencial para ISPs y en el routing de Internet para agregar rutas y reducir el tamaño de las tablas de routing.</p>
+        </section>
+        
+        <section id="games" class="content-section">
+            <h2>Juegos Educativos</h2>
+            <p>Pon a prueba tus conocimientos sobre direccionamiento IP con estos juegos interactivos.</p>
+            
+            <div class="game-container">
+                <h3>Quiz de Direccionamiento IP</h3>
+                <p id="quiz-question">¿Qué significa la sigla VLSM?</p>
+                
+                <div class="quiz-options">
+                    <div class="quiz-option" data-correct="false">Variable Length System Mask</div>
+                    <div class="quiz-option" data-correct="true">Variable Length Subnet Mask</div>
+                    <div class="quiz-option" data-correct="false">Virtual Length Subnet Masking</div>
+                    <div class="quiz-option" data-correct="false">Variable Link Subnet Mask</div>
+                </div>
+                
+                <div class="result" id="quiz-result"></div>
+                
+                <div class="game-controls">
+                    <button id="next-question">Siguiente Pregunta</button>
+                    <button id="reveal-answer">Revelar Respuesta</button>
+                </div>
+            </div>
+            
+            <div class="game-container">
+                <h3>Calculadora de Subredes</h3>
+                <p>Ingresa una dirección IP y selecciona el tipo de cálculo:</p>
+                
+                <input type="text" id="ip-address" placeholder="Ej: 192.168.1.0">
+                <select id="calculation-type">
+                    <option value="subnets">Calcular subredes</option>
+                    <option value="hosts">Calcular hosts disponibles</option>
+                    <option value="mask">Determinar máscara de subred</option>
+                </select>
+                
+                <button id="calculate">Calcular</button>
+                
+                <div class="result" id="calculation-result"></div>
+            </div>
+        </section>
+        
+        <footer>
+           
+
+        </footer>
+    </div>
+
+    <script>
+        // Funcionalidad de pestañas
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const contentSections = document.querySelectorAll('.content-section');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const target = button.getAttribute('data-target');
+                
+                // Actualizar botones activos
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Mostrar sección correspondiente
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === target) {
+                        section.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // Quiz interactivo
+        const quizOptions = document.querySelectorAll('.quiz-option');
+        const quizResult = document.getElementById('quiz-result');
+        const nextQuestionBtn = document.getElementById('next-question');
+        const revealAnswerBtn = document.getElementById('reveal-answer');
+        
+        quizOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                if (!option.classList.contains('correct') && !option.classList.contains('incorrect')) {
+                    const isCorrect = option.getAttribute('data-correct') === 'true';
+                    
+                    if (isCorrect) {
+                        option.classList.add('correct');
+                        quizResult.textContent = '¡Correcto!';
+                        quizResult.className = 'result success';
+                    } else {
+                        option.classList.add('incorrect');
+                        quizResult.textContent = 'Incorrecto. Intenta de nuevo.';
+                        quizResult.className = 'result error';
+                    }
+                }
+            });
+        });
+        
+        revealAnswerBtn.addEventListener('click', () => {
+            quizOptions.forEach(option => {
+                if (option.getAttribute('data-correct') === 'true') {
+                    option.classList.add('correct');
+                }
+            });
+            quizResult.textContent = 'La respuesta correcta es: Variable Length Subnet Mask';
+            quizResult.className = 'result success';
+        });
+        
+        nextQuestionBtn.addEventListener('click', () => {
+            // En una implementación real, cargaría una nueva pregunta
+            quizOptions.forEach(option => {
+                option.classList.remove('correct', 'incorrect');
+            });
+            quizResult.textContent = '';
+            quizResult.className = 'result';
+            
+            // Simular una nueva pregunta
+            document.getElementById('quiz-question').textContent = "¿Qué notación utiliza CIDR?";
+            
+            // Simular nuevas opciones
+            const options = document.querySelectorAll('.quiz-option');
+            options[0].textContent = "Notación de punto decimal";
+            options[0].setAttribute('data-correct', 'false');
+            options[1].textContent = "Notación de barra (/) con longitud de prefijo";
+            options[1].setAttribute('data-correct', 'true');
+            options[2].textContent = "Notación de máscara de subred completa";
+            options[2].setAttribute('data-correct', 'false');
+            options[3].textContent = "Notación hexadecimal";
+            options[3].setAttribute('data-correct', 'false');
+        });
+        
+        // Calculadora de subredes
+        const calculateBtn = document.getElementById('calculate');
+        const calculationResult = document.getElementById('calculation-result');
+        
+        calculateBtn.addEventListener('click', () => {
+            const ipAddress = document.getElementById('ip-address').value;
+            const calculationType = document.getElementById('calculation-type').value;
+            
+            if (!ipAddress) {
+                calculationResult.textContent = 'Por favor, ingresa una dirección IP válida.';
+                calculationResult.className = 'result error';
+                return;
+            }
+            
+            // Simular cálculo (en una implementación real, se harían cálculos reales)
+            if (calculationType === 'subnets') {
+                calculationResult.textContent = `Para la red ${ipAddress}/24, puedes crear 4 subredes de /26 con 62 hosts cada una.`;
+                calculationResult.className = 'result success';
+            } else if (calculationType === 'hosts') {
+                calculationResult.textContent = `La red ${ipAddress}/24 puede alojar hasta 254 hosts.`;
+                calculationResult.className = 'result success';
+            } else if (calculationType === 'mask') {
+                calculationResult.textContent = `Para la red ${ipAddress} con 8 subredes y 30 hosts cada una, la máscara recomendada es 255.255.255.224 (/27).`;
+                calculationResult.className = 'result success';
+            }
+        });
+    </script>
+</body>
+</html>
