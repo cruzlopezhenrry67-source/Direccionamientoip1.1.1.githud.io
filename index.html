@@ -227,16 +227,6 @@
             transform: translateY(-2px);
         }
         
-        input, select {
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(59, 130, 246, 0.5);
-            background: rgba(30, 41, 59, 0.8);
-            color: white;
-            width: 100%;
-            margin: 10px 0;
-        }
-        
         .result {
             padding: 15px;
             border-radius: 8px;
@@ -295,7 +285,7 @@
             <button class="tab-btn" data-target="vlsm">VLSM (Con Clase)</button>
             <button class="tab-btn" data-target="cidr">CIDR (Sin Clase)</button>
             <button class="tab-btn" data-target="comparison">Comparación</button>
-            <button class="tab-btn" data-target="games">Juegos Educativos</button>
+            <button class="tab-btn" data-target="games">Quiz Educativo</button>
         </div>
         
         <section id="intro" class="content-section active">
@@ -434,8 +424,8 @@
         </section>
         
         <section id="games" class="content-section">
-            <h2>Juegos Educativos</h2>
-            <p>Pon a prueba tus conocimientos sobre direccionamiento IP con estos juegos interactivos.</p>
+            <h2>Quiz Educativo</h2>
+            <p>Pon a prueba tus conocimientos sobre direccionamiento IP con este quiz interactivo.</p>
             
             <div class="game-container">
                 <h3>Quiz de Direccionamiento IP</h3>
@@ -455,27 +445,10 @@
                     <button id="reveal-answer">Revelar Respuesta</button>
                 </div>
             </div>
-            
-            <div class="game-container">
-                <h3>Calculadora de Subredes</h3>
-                <p>Ingresa una dirección IP y selecciona el tipo de cálculo:</p>
-                
-                <input type="text" id="ip-address" placeholder="Ej: 192.168.1.0">
-                <select id="calculation-type">
-                    <option value="subnets">Calcular subredes</option>
-                    <option value="hosts">Calcular hosts disponibles</option>
-                    <option value="mask">Determinar máscara de subred</option>
-                </select>
-                
-                <button id="calculate">Calcular</button>
-                
-                <div class="result" id="calculation-result"></div>
-            </div>
         </section>
         
         <footer>
            
-
         </footer>
     </div>
 
@@ -557,33 +530,6 @@
             options[2].setAttribute('data-correct', 'false');
             options[3].textContent = "Notación hexadecimal";
             options[3].setAttribute('data-correct', 'false');
-        });
-        
-        // Calculadora de subredes
-        const calculateBtn = document.getElementById('calculate');
-        const calculationResult = document.getElementById('calculation-result');
-        
-        calculateBtn.addEventListener('click', () => {
-            const ipAddress = document.getElementById('ip-address').value;
-            const calculationType = document.getElementById('calculation-type').value;
-            
-            if (!ipAddress) {
-                calculationResult.textContent = 'Por favor, ingresa una dirección IP válida.';
-                calculationResult.className = 'result error';
-                return;
-            }
-            
-            // Simular cálculo (en una implementación real, se harían cálculos reales)
-            if (calculationType === 'subnets') {
-                calculationResult.textContent = `Para la red ${ipAddress}/24, puedes crear 4 subredes de /26 con 62 hosts cada una.`;
-                calculationResult.className = 'result success';
-            } else if (calculationType === 'hosts') {
-                calculationResult.textContent = `La red ${ipAddress}/24 puede alojar hasta 254 hosts.`;
-                calculationResult.className = 'result success';
-            } else if (calculationType === 'mask') {
-                calculationResult.textContent = `Para la red ${ipAddress} con 8 subredes y 30 hosts cada una, la máscara recomendada es 255.255.255.224 (/27).`;
-                calculationResult.className = 'result success';
-            }
         });
     </script>
 </body>
